@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube UTM Link Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-label {
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .result-container {
+            position: relative;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .copy-button:hover {
+            background: #218838;
+        }
+
+        .copy-button.copied {
+            background: #17a2b8;
+        }
+
+        .example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .example-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 YouTube UTM Link Generator</h1>
+        
+        <form id="utmForm">
+            <div class="form-group">
+                <label for="videoTitle">YouTube Video Title:</label>
+                <input type="text" id="videoTitle" name="videoTitle" placeholder="Enter your YouTube video title..." required>
+            </div>
+            
+            <button type="submit">Generate UTM Link</button>
+        </form>
+
+        <div class="result" id="result">
+            <div class="result-label">Generated UTM Link:</div>
+            <div class="result-container">
+                <span id="generatedLink"></span>
+                <button class="copy-button" id="copyButton" onclick="copyToClipboard()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('utmForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const videoTitle = document.getElementById('videoTitle').value.trim();
+            if (!videoTitle) return;
+            
+            // Convert to URL-safe format
+            const urlSafeTitle = videoTitle
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+                .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+            
+            // Generate the UTM link
+            const baseUrl = 'https://global-sovereign.com/';
+            const utmParams = new URLSearchParams({
+                utm_source: 'youtube',
+                utm_medium: 'description',
+                utm_campaign: 'drrobin',
+                utm_content: urlSafeTitle
+            });
+            
+            const finalLink = baseUrl + '?' + utmParams.toString();
+            
+            // Display the result
+            document.getElementById('generatedLink').textContent = finalLink;
+            document.getElementById('result').classList.add('show');
+            
+            // Reset copy button
+            const copyButton = document.getElementById('copyButton');
+            copyButton.textContent = 'Copy';
+            copyButton.classList.remove('copied');
+        });
+
+        function copyToClipboard() {
+            const linkText = document.getElementById('generatedLink').textContent;
+            const copyButton = document.getElementById('copyButton');
+            
+            navigator.clipboard.writeText(linkText).then(function() {
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = linkText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Auto-focus on the input field
+        document.getElementById('videoTitle').focus();
+    </script>
+</body>
+</html>
