@@ -163,16 +163,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>YouTube Link Generator</h1>
+        <h1>🎬 YouTube UTM Link Generator</h1>
         
         <form id="utmForm">
             <div class="form-group">
-                <label for="videoTitle">YouTube Video Title:</label>
-                <input type="text" id="videoTitle" name="videoTitle" placeholder="Enter your YouTube video title..." required>
+                <label for="videoUrl">YouTube Video URL:</label>
+                <input type="text" id="videoUrl" name="videoUrl" placeholder="Paste YouTube video link here..." required>
             </div>
             
-            <button type="submit">Generate UTM Link</button>
+            <button type="submit" id="submitBtn">Generate UTM Link</button>
         </form>
+        
+        <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+            <div style="color: #667eea; font-weight: 600;">Fetching video title...</div>
+        </div>
 
         <div class="result" id="result">
             <div class="result-label">Generated UTM Link:</div>
@@ -181,42 +185,119 @@
                 <button class="copy-button" id="copyButton" onclick="copyToClipboard()">Copy</button>
             </div>
         </div>
+
+        <div class="example">
+            <div class="example-title">Example:</div>
+            <div class="example-text">
+                Input: https://www.youtube.com/watch?v=9hQp5l29ypA<br>
+                Output: https://global-sovereign.com/?utm_source=youtube&utm_medium=description&utm_campaign=drrobin&utm_content=video-title-here&video=9hQp5l29ypA
+            </div>
+        </div>
+        
+        <div class="example" style="margin-top: 15px; background: #fff3cd; border-left-color: #ffc107;">
+            <div class="example-title">Supported URL formats:</div>
+            <div class="example-text" style="font-size: 13px;">
+                • https://www.youtube.com/watch?v=VIDEO_ID<br>
+                • https://youtu.be/VIDEO_ID<br>
+                • https://m.youtube.com/watch?v=VIDEO_ID<br>
+                • https://youtube.com/watch?v=VIDEO_ID
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('utmForm').addEventListener('submit', function(e) {
+        function extractVideoId(url) {
+            // Match various YouTube URL formats
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+                /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+            ];
+            
+            for (let pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            return null;
+        }
+
+        async function fetchVideoTitle(videoId) {
+            try {
+                const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch video information');
+                }
+                const data = await response.json();
+                return data.title;
+            } catch (error) {
+                console.error('Error fetching video title:', error);
+                throw error;
+            }
+        }
+
+        document.getElementById('utmForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const videoTitle = document.getElementById('videoTitle').value.trim();
-            if (!videoTitle) return;
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            if (!videoUrl) return;
             
-            // Convert to URL-safe format
-            const urlSafeTitle = videoTitle
-                .toLowerCase()
-                .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-                .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
             
-            // Generate the UTM link
-            const baseUrl = 'https://global-sovereign.com/';
-            const utmParams = new URLSearchParams({
-                utm_source: 'youtube',
-                utm_medium: 'description',
-                utm_campaign: 'drrobin',
-                utm_content: urlSafeTitle
-            });
+            // Extract video ID
+            const videoId = extractVideoId(videoUrl);
+            if (!videoId) {
+                alert('Invalid YouTube URL. Please paste a valid YouTube video link.');
+                return;
+            }
             
-            const finalLink = baseUrl + '?' + utmParams.toString();
+            // Show loading state
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.classList.remove('show');
             
-            // Display the result
-            document.getElementById('generatedLink').textContent = finalLink;
-            document.getElementById('result').classList.add('show');
-            
-            // Reset copy button
-            const copyButton = document.getElementById('copyButton');
-            copyButton.textContent = 'Copy';
-            copyButton.classList.remove('copied');
+            try {
+                // Fetch video title
+                const videoTitle = await fetchVideoTitle(videoId);
+                
+                // Convert to URL-safe format
+                const urlSafeTitle = videoTitle
+                    .toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+                    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+                
+                // Generate the UTM link with video parameter
+                const baseUrl = 'https://global-sovereign.com/';
+                const utmParams = new URLSearchParams({
+                    utm_source: 'youtube',
+                    utm_medium: 'description',
+                    utm_campaign: 'drrobin',
+                    utm_content: urlSafeTitle,
+                    video: videoId
+                });
+                
+                const finalLink = baseUrl + '?' + utmParams.toString();
+                
+                // Display the result
+                document.getElementById('generatedLink').textContent = finalLink;
+                resultDiv.classList.add('show');
+                
+                // Reset copy button
+                const copyButton = document.getElementById('copyButton');
+                copyButton.textContent = 'Copy';
+                copyButton.classList.remove('copied');
+                
+            } catch (error) {
+                alert('Error: Could not fetch video information. Please make sure the video is public and the URL is correct.');
+            } finally {
+                // Hide loading state
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
         });
 
         function copyToClipboard() {
@@ -252,7 +333,7 @@
         }
 
         // Auto-focus on the input field
-        document.getElementById('videoTitle').focus();
+        document.getElementById('videoUrl').focus();
     </script>
 </body>
 </html>
