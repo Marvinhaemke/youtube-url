@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram UTM Link Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #e6683c;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-label {
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .result-container {
+            position: relative;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 15px;
+            padding-right: 80px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .copy-button:hover {
+            background: #218838;
+        }
+
+        .copy-button.copied {
+            background: #17a2b8;
+        }
+
+        .example {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffeef3;
+            border-radius: 10px;
+            border-left: 4px solid #dc2743;
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .example-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .info-box-text {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Instagram UTM Link Generator</h1>
+        
+        <form id="utmForm">
+            <div class="form-group">
+                <label for="postTitle">Instagram Post Title:</label>
+                <input type="text" id="postTitle" name="postTitle" placeholder="Enter your Instagram post title..." required>
+            </div>
+            
+            <button type="submit">Generate UTM Link</button>
+        </form>
+
+        <div class="result" id="result">
+            <div class="result-label">Generated UTM Link:</div>
+            <div class="result-container">
+                <span id="generatedLink"></span>
+                <button class="copy-button" id="copyButton" onclick="copyToClipboard()">Copy</button>
+            </div>
+        </div>
+
+        <div class="example">
+            <div class="example-title">Example:</div>
+            <div class="example-text">
+                Input: "5 Steps to Financial Freedom - Start Today!"<br>
+                Output: https://global-sovereign.com/?utm_source=ig&utm_medium=og&utm_campaign=5-steps-to-financial-freedom-start-today
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">UTM Parameters:</div>
+            <div class="info-box-text">
+                • <strong>Source:</strong> ig (Instagram)<br>
+                • <strong>Medium:</strong> og (Organic)<br>
+                • <strong>Campaign:</strong> Your post title (URL-safe format)
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('utmForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const postTitle = document.getElementById('postTitle').value.trim();
+            if (!postTitle) return;
+            
+            // Convert to URL-safe format
+            const urlSafeTitle = postTitle
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+                .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+            
+            // Generate the UTM link
+            const baseUrl = 'https://global-sovereign.com/';
+            const utmParams = new URLSearchParams({
+                utm_source: 'ig',
+                utm_medium: 'og',
+                utm_campaign: urlSafeTitle
+            });
+            
+            const finalLink = baseUrl + '?' + utmParams.toString();
+            
+            // Display the result
+            document.getElementById('generatedLink').textContent = finalLink;
+            document.getElementById('result').classList.add('show');
+            
+            // Reset copy button
+            const copyButton = document.getElementById('copyButton');
+            copyButton.textContent = 'Copy';
+            copyButton.classList.remove('copied');
+        });
+
+        function copyToClipboard() {
+            const linkText = document.getElementById('generatedLink').textContent;
+            const copyButton = document.getElementById('copyButton');
+            
+            navigator.clipboard.writeText(linkText).then(function() {
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = linkText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Auto-focus on the input field
+        document.getElementById('postTitle').focus();
+    </script>
+</body>
+</html>
